@@ -1,5 +1,6 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
 import java.util.Stack;
 
 import javax.swing.*;  
@@ -26,6 +27,7 @@ public class Setup{
     static int rollVal;
     static int selectVal = 0;
     static Stack<Integer> stack = new Stack<Integer>();
+    static HashSet<Integer> set = new HashSet<>();
     public static void create() {
         undo.setEnabled(false);
         roll1.setEnabled(false);
@@ -47,6 +49,7 @@ public class Setup{
                 public void actionPerformed(ActionEvent e) {
                     if(sel.isEnabled()){
                         int value = Integer.parseInt(sel.getText());
+                        set.remove(value);
                         stack.add(value);
                         selectVal += value;
                         sel.setEnabled(false);
@@ -56,12 +59,13 @@ public class Setup{
                         if(stack.isEmpty() ==false){
                             undo.setEnabled(true);
                         }
-
+                        
                     }
                     System.out.println(selectVal);
                 }  
             });
             array[i].setBounds((i*110)+2,0,100,200);
+            set.add(i+1);
         }
         frame.add(undo);
         frame.add(roll1);
@@ -78,6 +82,14 @@ public class Setup{
                 System.out.println(rollVal);
                 roll1.setEnabled(false);
                 roll2.setEnabled(false);
+                int[] subs = new int[set.size()];
+                int j = 0;
+                for(Integer i : set){
+                    subs[j++] = i;
+                }
+                if(!isThereSubsetSum(subs, rollVal)){
+                    System.out.println("GAME OVER");
+                }
             }
         });
         roll2.addActionListener(new ActionListener(){
@@ -87,6 +99,14 @@ public class Setup{
                 System.out.println(rollVal);
                 roll2.setEnabled(false);
                 roll1.setEnabled(false);
+                int[] subs = new int[set.size()];
+                int j = 0;
+                for(Integer i : set){
+                    subs[j++] = i;
+                }
+                if(!isThereSubsetSum(subs, rollVal)){
+                    System.out.println("GAME OVER");
+                }
             }
         });
         undo.addActionListener(new ActionListener(){
@@ -95,6 +115,7 @@ public class Setup{
                 int undov = stack.pop();
                 array[undov-1].setEnabled(true);
                 selectVal -= undov;
+                set.add(undov);
                 if(stack.isEmpty()){
                     undo.setEnabled(false);
                 }
@@ -118,9 +139,31 @@ public class Setup{
         frame.setSize(1000,600);//400 width and 500 height  
         frame.setLayout(null);//using no layout managers  
         frame.setVisible(true);//making the framerame visible  
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     public static boolean check(){
         return rollVal == selectVal;
+    }
+    public static boolean isThereSubsetSum(int[] A, int k)
+    {
+        int n = A.length;
+        boolean[][] T = new boolean[n + 1][k + 1];
+        for (int i = 0; i <= n; i++) {
+            T[i][0] = true;
+        }
+        for (int i = 1; i <= n; i++)
+        {
+            for (int j = 1; j <= k; j++)
+            {
+                if (A[i - 1] > j) {
+                    T[i][j] = T[i - 1][j];
+                }
+                else {
+                    T[i][j] = T[i - 1][j] || T[i - 1][j - A[i - 1]];
+                }
+            }
+        }
+        return T[n][k];
     }
 
     
